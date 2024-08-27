@@ -33,11 +33,15 @@ public class AugmentSMP implements ModInitializer {
 				// Increment the amount of dirt blocks that have been broken
 				serverState.totalDirtBlocksBroken += 1;
 
+				PlayerData playerState = StateSaverAndLoader.getPlayerState(player);
+				playerState.dirtBlocksBroken += 1;
+
 				// Send a packet to the client
 				MinecraftServer server = world.getServer();
 
 				PacketByteBuf data = PacketByteBufs.create();
 				data.writeInt(serverState.totalDirtBlocksBroken);
+				data.writeInt(playerState.dirtBlocksBroken);
 
 				ServerPlayerEntity playerEntity = server.getPlayerManager().getPlayer(player.getUuid());
 				server.execute(() -> {

@@ -14,8 +14,11 @@ public class AugmentSMPClient implements ClientModInitializer {
 
 		ClientPlayNetworking.registerGlobalReceiver(AugmentSMP.DIRT_BROKEN, (client, handler, buf, responseSender) -> {
 			int totalDirtBlocksBroken = buf.readInt();
+			int playerSpecificDirtBlocksBroken = buf.readInt();
+
 			client.execute(() -> {
 				client.player.sendMessage(Text.literal("Total dirt blocks broken: " + totalDirtBlocksBroken));
+				client.player.sendMessage(Text.literal("Player specific dirt blocks broken: " + playerSpecificDirtBlocksBroken));
 			});
 		});
 	}
