@@ -1,31 +1,34 @@
 package fox.mods;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StateSaverAndLoader extends PersistentState {
 
-    public Integer totalDirtBlocksBroken = 0;
+    public Integer totalSlots = 0;
 
-    public ConcurrentHashMap<UUID, PlayerData> players = new ConcurrentHashMap<>();
+    public HashMap<UUID, PlayerData> players = new HashMap<>();
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
-        nbt.putInt("totalDirtBlocksBroken", totalDirtBlocksBroken);
+        nbt.putInt("totalSlots", totalSlots);
 
         NbtCompound playersNbt = new NbtCompound();
         players.forEach((uuid, playerData) -> {
             NbtCompound playerNbt = new NbtCompound();
-            playerNbt.putInt("dirtBlocksBroken", playerData.dirtBlocksBroken);
+            playerNbt.putInt("slots", playerData.slots);
             playersNbt.put(uuid.toString(), playerNbt);
         });
         nbt.put("players", playersNbt);
@@ -35,12 +38,12 @@ public class StateSaverAndLoader extends PersistentState {
 
     public static StateSaverAndLoader createFromNbt(NbtCompound tag) {
         StateSaverAndLoader state = new StateSaverAndLoader();
-        state.totalDirtBlocksBroken = tag.getInt("totalDirtBlocksBroken");
+        state.totalSlots = tag.getInt("totalSlots");
 
         NbtCompound playersNbt = tag.getCompound("players");
         playersNbt.getKeys().forEach(key -> {
             PlayerData playerData = new PlayerData();
-            playerData.dirtBlocksBroken = playersNbt.getCompound(key).getInt("dirtBlocksBroken");
+            playerData.slots = playersNbt.getCompound(key).getInt("slots");
             UUID uuid = UUID.fromString(key);
             state.players.put(uuid, playerData);
         });
@@ -48,16 +51,16 @@ public class StateSaverAndLoader extends PersistentState {
         return state;
     }
 
+
     public static StateSaverAndLoader getServerState(MinecraftServer server) {
+
         PersistentStateManager persistentStateManager = server.getWorld(World.OVERWORLD).getPersistentStateManager();
 
-        StateSaverAndLoader state = persistentStateManager.getOrCreate(
+        return persistentStateManager.getOrCreate(
                 StateSaverAndLoader::createFromNbt,
                 StateSaverAndLoader::new,
                 "state_saver_and_loader"
         );
-
-        return state;
     }
 
     public static PlayerData getPlayerState(LivingEntity player) {

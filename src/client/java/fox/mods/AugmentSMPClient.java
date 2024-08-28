@@ -8,17 +8,26 @@ import net.minecraft.text.Text;
 
 public class AugmentSMPClient implements ClientModInitializer {
 
+	public static PlayerData playerData = new PlayerData();
+
 	@Override
 	public void onInitializeClient() {
 		HudRenderCallback.EVENT.register(new SlotsRenderer());
 
-		ClientPlayNetworking.registerGlobalReceiver(AugmentSMP.DIRT_BROKEN, (client, handler, buf, responseSender) -> {
-			int totalDirtBlocksBroken = buf.readInt();
-			int playerSpecificDirtBlocksBroken = buf.readInt();
+		ClientPlayNetworking.registerGlobalReceiver(AugmentSMP.DEATH, (client, handler, buf, responseSender) -> {
 
 			client.execute(() -> {
-				client.player.sendMessage(Text.literal("Total dirt blocks broken: " + totalDirtBlocksBroken));
-				client.player.sendMessage(Text.literal("Player specific dirt blocks broken: " + playerSpecificDirtBlocksBroken));
+
+				int playerSlots = StateSaverAndLoader.getPlayerState(client.player).slots;
+				client.player.sendMessage(Text.literal("Slots: " + playerSlots));
+			});
+		});
+
+		ClientPlayNetworking.registerGlobalReceiver(AugmentSMP.INITIAL_SYNC, (client, handler, buf, responseSender) -> {
+			playerData.slots = buf.readInt();
+
+			client.execute(() -> {
+				client.player.sendMessage(Text.literal("Initial slots: " + playerData.slots));
 			});
 		});
 	}

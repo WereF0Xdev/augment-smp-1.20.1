@@ -1,5 +1,5 @@
 package fox.mods;
 
-class PlayerData {
-    public int dirtBlocksBroken = 0;
+public class PlayerData {
+    public int slots = 2;
 }
